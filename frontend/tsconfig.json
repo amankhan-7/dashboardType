@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -17,16 +13,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "baseUrl": ".", // 🔑 REQUIRED
-    "paths": {
-      "@/*": [
-        "./*"
-      ] // 🔑 REQUIRED (no src/)
-    },
+
+    "baseUrl": ".",                     
+    "paths": { "@/*": ["./*"] },       
+    "ignoreDeprecations": "6.0",        // <-- Silences the deprecation warning
+
     "plugins": [
-      {
-        "name": "next"
-      }
+      { "name": "next" }
     ]
   },
   "include": [
@@ -36,7 +29,5 @@
     "**/*.tsx",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -1,81 +1,69 @@
+// api/tasks/[id]/route.ts
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import { connectDB } from "../../../lib/db";
 import Task from "../../../models/Task";
-import { verifyToken } from "../../../lib/jwt";
+import { requireUser } from "../../../lib/auth";
+import { taskUpdateSchema } from "../../../lib/validators";
+import { withCors, handlePreflight } from "../../../lib/cors";
+
+export async function OPTIONS() {
+  return handlePreflight();
+}
 
 /* ---------- UPDATE TASK ---------- */
-export async function PUT(req: Request, context: any) {
-  const { id } = await context.params; // ✅ REQUIRED in your Next.js version
+export async function PATCH(req: Request, context: any) {
 
-  const cookieStore = await cookies(); // ✅ async in your setup
-  const token = cookieStore.get("token")?.value;
+    const params = await context.params; 
+  const { id } = params;
+  
+  // Ensure user is authenticated
+  const { userId, error } = await requireUser();
+  if (error) return error;
 
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+//   console.log("PATCH id:", id);
+// console.log("userId from auth:", userId);
+// const taskInDb = await Task.findById(id);
+// console.log("Task in DB:", taskInDb);
 
-  let userId: string;
-  try {
-    ({ userId } = verifyToken(token));
-  } catch {
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-  }
 
+  // Parse and validate incoming data
   const body = await req.json();
+  const parsedData = taskUpdateSchema.parse(body);
 
-  // 🔒 whitelist updates
-  const updateData: Record<string, any> = {};
-  if (typeof body.title === "string") updateData.title = body.title;
-  if (typeof body.completed === "boolean")
-    updateData.completed = body.completed;
-
-  if (Object.keys(updateData).length === 0) {
-    return NextResponse.json(
+  if (Object.keys(parsedData).length === 0) {
+    return withCors(NextResponse.json(
       { error: "No valid fields to update" },
       { status: 400 }
-    );
+    ));
   }
 
   await connectDB();
 
+  // Update task partially
   const task = await Task.findOneAndUpdate(
-    {
-      _id: id,
-      userId: new mongoose.Types.ObjectId(userId),
-    },
-    { $set: updateData },
+    { _id: id, userId: new mongoose.Types.ObjectId(userId) },
+    { $set: parsedData },
     { new: true, runValidators: true }
   );
 
   if (!task) {
-    return NextResponse.json(
+    return withCors(NextResponse.json(
       { error: "Task not found or not owned by user" },
       { status: 404 }
-    );
+    ));
   }
 
-  return NextResponse.json(task);
+  return withCors(NextResponse.json(task));
 }
 
 /* ---------- DELETE TASK ---------- */
 export async function DELETE(req: Request, context: any) {
-  const { id } = await context.params; // ✅ REQUIRED
+     const params = await context.params; 
+  const { id } = params;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let userId: string;
-  try {
-    ({ userId } = verifyToken(token));
-  } catch {
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-  }
+  const { userId, error } = await requireUser();
+  if (error) return error;
 
   await connectDB();
 
@@ -85,11 +73,8 @@ export async function DELETE(req: Request, context: any) {
   });
 
   if (!deleted) {
-    return NextResponse.json(
-      { error: "Task not found or not owned by user" },
-      { status: 404 }
-    );
+    return withCors(NextResponse.json({ error: "Task not found or not owned by user" }, { status: 404 }));
   }
 
-  return NextResponse.json({ message: "Deleted" });
+  return withCors(NextResponse.json({ message: "Deleted" }));
 }

@@ -8,8 +8,8 @@ export default function Navbar() {
 
   const links = [
     { name: "Home", href: "/dashboard" },
-    { name: "Profile", href: "/dashboard/profile" },
     { name: "Tasks", href: "/dashboard/tasks" },
+    { name: "Profile", href: "/dashboard/profile" },
   ];
 
   return (
@@ -17,8 +17,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <Link href="/dashboard" className="text-2xl font-bold text-red-600">
-            Todo Dahboard
+          <Link href="/dashboard" className="text-xl font-semibold tracking-tight text-neutral-900">
+            Tasks Manager
           </Link>
 
           {/* Links */}
@@ -27,7 +27,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium ${
+                className={`text-sm font-medium tracking-tight ${
                   pathname === link.href
                     ? "text-red-600 border-b-2 border-red-600"
                     : "text-neutral-700 hover:text-red-600"

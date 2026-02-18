@@ -10,7 +10,7 @@ export function useAuth() {
 
     getProfile()
       .then((data) => {
-        if (!cancelled) setUser(data);
+        if (!cancelled) setUser(data.user);
       })
       .catch(() => {
         if (!cancelled) setUser(null);
