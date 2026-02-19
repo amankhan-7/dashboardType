@@ -1,16 +1,24 @@
 import { useEffect, useState } from "react";
 import { getProfile } from "../lib/api";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  // add other user fields here
+}
+
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
+
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     getProfile()
-      .then((data) => {
-        if (!cancelled) setUser(data.user);
+      .then((data: User) => {
+        if (!cancelled) setUser(data);
       })
       .catch(() => {
         if (!cancelled) setUser(null);
@@ -23,6 +31,7 @@ export function useAuth() {
       cancelled = true;
     };
   }, []);
+
 
   return { user, loading };
 }
