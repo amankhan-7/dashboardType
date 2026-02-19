@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  appDir: true, // move it here
+  // your other options here
 };
 
 module.exports = nextConfig;
