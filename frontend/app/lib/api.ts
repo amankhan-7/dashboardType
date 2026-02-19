@@ -67,20 +67,22 @@ async function baseFetch<T>(
   retry = true
 ): Promise<T> {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
+    const headers: HeadersInit = {
+      ...(options.body && !(options.body instanceof FormData)
+        ? { "Content-Type": "application/json" }
+        : {}),
+      ...(options.headers || {}),
+    };
+
     const res = await fetch(`${API}${path}`, {
       ...options,
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
+      headers,
       signal: controller.signal,
     });
-
-    clearTimeout(id);
 
     if (res.status === 204) {
       return null as T;
@@ -93,14 +95,12 @@ async function baseFetch<T>(
       data = null;
     }
 
-    // Handle expired access token
+    // Handle expired token
     if (res.status === 401 && retry) {
-      try {
-        await refreshAccessToken();
-        return baseFetch<T>(path, options, timeout, false);
-      } catch {
-        throw new ApiError("Session expired. Please login again.", 401);
-      }
+      clearTimeout(timeoutId);
+
+      await refreshAccessToken(); // Make sure THIS also has timeout inside it
+      return baseFetch<T>(path, options, timeout, false);
     }
 
     if (!res.ok) {
@@ -112,8 +112,6 @@ async function baseFetch<T>(
 
     return data as T;
   } catch (error) {
-    clearTimeout(id);
-
     if (error instanceof ApiError) {
       throw error;
     }
@@ -123,8 +121,11 @@ async function baseFetch<T>(
     }
 
     throw new ApiError("Network error", 0);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
+
 
 
 /* ============================= */

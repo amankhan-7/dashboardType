@@ -6,7 +6,7 @@ export function DotsLoader() {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="h-3 w-3 rounded-full bg-red-500"
+          className="h-3 w-3 rounded-full bg-black"
           animate={{ y: [0, -10, 0] }}
           transition={{
             duration: 0.6,
@@ -24,7 +24,7 @@ export function ProfileLoader() {
   return (
     <div className="flex flex-col items-center justify-center py-10">
       <motion.p
-        className="mt-4 text-lg md:text-xl text-red-500 font-semibold"
+        className="mt-4 text-lg md:text-xl text-black font-semibold"
         initial={{ opacity: 0.4 }}
         animate={{ opacity: [0.4, 1, 0.4] }}
         transition={{
@@ -39,7 +39,7 @@ export function ProfileLoader() {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="h-3 w-3 rounded-full bg-red-500"
+          className="h-3 w-3 rounded-full bg-black"
           initial={{ opacity: 0.8 }}
           animate={{ y: [0, -10, 0] }}
           transition={{
