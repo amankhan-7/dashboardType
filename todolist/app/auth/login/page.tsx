@@ -35,7 +35,7 @@ export default function LoginPage() {
 
       await login(trimmedEmail, trimmedPassword);
 
-      router.push("/dashboard");
+      router.push("/");
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError) {

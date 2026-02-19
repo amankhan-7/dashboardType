@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTasks } from "../../hooks/useTasks";
 import TaskForm from "../../components/TaskForm";
 import TaskCard from "../../components/TaskCard";
@@ -8,9 +8,25 @@ import { DotsLoader } from "@/components/Loading";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClipboardList } from "lucide-react";
 import Navbar from "@/components/Navbar"
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 
 export default function TasksPage() {
+
+    const router = useRouter();
+    const { user, loading:authloading } = useAuth();
+    // console.log("user obj",user);
+  
+    //  Redirect ONLY after loading finishes
+    useEffect(() => {
+      if (!authloading && !user) {
+        router.replace("/auth/login");
+      }
+    }, [authloading, user, router]);
+  
+
+
   const { tasks, loading, createTask, deleteTask, updateTask } = useTasks();
 
   const [editingTask, setEditingTask] = useState(null);
@@ -23,32 +39,36 @@ export default function TasksPage() {
     setError("");
   }
 
-  async function handleSaveEdit() {
-    if (!editedTitle.trim()) {
-      setError("Title cannot be empty.");
-      return;
-    }
-
-    if (editedTitle === editingTask.title) {
-      setEditingTask(null);
-      return;
-    }
-
-    try {
-      await updateTask(editingTask._id, { title: editedTitle });
-      setEditingTask(null);
-    } catch (err) {
-      setError(err.message || "Failed to update task");
-    }
+ async function handleSaveEdit() {
+  const trimmedTitle = editedTitle.trim();
+  if (!trimmedTitle) {
+    setError("Title cannot be empty.");
+    return;
   }
 
-  async function handleToggleComplete(id, completed) {
-    try {
-      await updateTask(id, { completed: !completed });
-    } catch (err) {
-      console.error(err.message || "Failed to update task status");
-    }
+  if (trimmedTitle === editingTask.title) {
+    setEditingTask(null);
+    return;
   }
+
+  try {
+    await updateTask(editingTask._id, { title: trimmedTitle });
+    setEditingTask(null);
+  } catch (err) {
+    setError(err.message || "Failed to update task");
+  }
+}
+
+
+ async function handleToggleComplete(id, completed) {
+  try {
+    // Send the new completed value to the backend
+    await updateTask(id, { completed });
+  } catch (err) {
+    console.error(err.message || "Failed to update task status");
+  }
+}
+
 
   if (loading) {
     return (
@@ -70,7 +90,7 @@ export default function TasksPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-8"
+        className="bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-8 mx-4 md:mx-auto"
       >
         <div className="flex items-center gap-3 mb-6">
           <ClipboardList className="w-6 h-6 text-neutral-700" />
@@ -86,7 +106,7 @@ export default function TasksPage() {
       {tasks.length > 0 && (
         <motion.div
           layout
-          className="space-y-4"
+          className="space-y-4 mx-4 md:mx-auto"
         >
           {tasks.map((task, index) => (
             <motion.div

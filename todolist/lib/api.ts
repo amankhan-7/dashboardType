@@ -1,3 +1,5 @@
+
+
 const API = process.env.NEXT_PUBLIC_API_URL!;
 
 if (!API) {
@@ -187,7 +189,13 @@ export function logout(): Promise<null> {
 export function getProfile(): Promise<User> {
   return baseFetch<User>("/api/profile");
 }
-
+export function updateProfile(
+  updates: { name?: string; email?: string; password?:string }): Promise<AuthResponse> {
+  return baseFetch<AuthResponse>("/api/auth/update", {
+    method: "POST",
+    body: JSON.stringify({ updates }),
+  });
+}
 /* ============================= */
 /*            TASKS              */
 /* ============================= */

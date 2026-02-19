@@ -15,9 +15,9 @@ export function useAuth() {
     let cancelled = false;
 
     getProfile()
-      .then((data) => {
-        if (!cancelled && data) {
-          const { name, email, createdAt } = data as any; //
+      .then((data: any) => {
+        if (!cancelled && data?.user) {
+          const { name, email, createdAt } = data.user;
           setUser({ name, email, createdAt });
         }
       })

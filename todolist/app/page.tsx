@@ -1,14 +1,28 @@
 "use client";
 
+import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ReadOnlyTaskCard from "@/components/StaticTasks";
 import { useTasks } from "../hooks/useTasks";
 import { DotsLoader } from "@/components/Loading";
 import { motion } from "framer-motion";
 import { ClipboardList } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
   const { tasks, loading } = useTasks();
+
+  const router = useRouter();
+  const { user, loading: authloading } = useAuth();
+  // console.log("user obj",user);
+
+  //  Redirect ONLY after loading finishes
+  useEffect(() => {
+    if (!authloading && !user) {
+      router.replace("/auth/login");
+    }
+  }, [authloading, user, router]);
 
   if (loading) {
     return (
@@ -20,7 +34,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-neutral-50 via-white to-neutral-100">
-       <Navbar /> 
+      <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-10">
         {/* Header Section */}
@@ -50,23 +64,22 @@ export default function DashboardPage() {
             layout
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-           {tasks.map((task, index) => (
-  <motion.div
-    key={task._id}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: index * 0.05 }}
-    className="relative"
-  >
-    {/* Number Badge */}
-    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-xl bg-neutral-900 text-white text-sm font-semibold flex items-center justify-center shadow-md">
-      {index + 1}
-    </div>
+            {tasks.map((task, index) => (
+              <motion.div
+                key={task._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="relative"
+              >
+                {/* Number Badge */}
+                <div className="absolute -top-3 -left-3 w-8 h-8 rounded-xl bg-neutral-900 text-white text-sm font-semibold flex items-center justify-center shadow-md">
+                  {index + 1}
+                </div>
 
-    <ReadOnlyTaskCard task={task} />
-  </motion.div>
-))}
-
+                <ReadOnlyTaskCard task={task} />
+              </motion.div>
+            ))}
           </motion.div>
         )}
 

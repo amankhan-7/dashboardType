@@ -1,4 +1,3 @@
-// app/api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../lib/db";
 import User from "../../../models/User";
@@ -13,6 +12,7 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   await connectDB();
+
   const { email, password } = loginSchema.parse(await req.json());
   const user = await User.findOne({ email });
 
@@ -22,8 +22,17 @@ export async function POST(req: Request) {
     );
   }
 
-  const accessToken = signAccessToken({ userId: user._id }, { expiresIn: "15m" });
-  const refreshToken = signRefreshToken({}, { expiresIn: "7d" });
+  const userId = user._id.toString();
+
+  const accessToken = signAccessToken(
+    { userId },
+    { expiresIn: "15m" }
+  );
+
+  const refreshToken = signRefreshToken(
+    { userId },
+    { expiresIn: "7d" }
+  );
 
   user.refreshToken = refreshToken;
   user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -31,12 +40,14 @@ export async function POST(req: Request) {
 
   const res = NextResponse.json({ message: "Logged in" });
 
+  const isProd = process.env.NODE_ENV === "production";
+
   res.cookies.set("accessToken", accessToken, {
     httpOnly: true,
     path: "/",
     maxAge: 15 * 60,
     sameSite: "lax",
-    secure: false,
+    secure: isProd,
   });
 
   res.cookies.set("refreshToken", refreshToken, {
@@ -44,7 +55,7 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 7 * 24 * 60 * 60,
     sameSite: "lax",
-    secure: false,
+    secure: isProd,
   });
 
   return withCors(res);

@@ -14,7 +14,7 @@ import Navbar from "@/components/Navbar"
 export default function ProfilePage() {
   const router = useRouter();
   const { user, loading } = useAuth();
-  // console.log("user",user);
+  // console.log("user obj",user);
 
   //  Redirect ONLY after loading finishes
   useEffect(() => {
@@ -39,23 +39,23 @@ export default function ProfilePage() {
   if (!user) {
     return null; // redirect in progress
   }
-
+  const avatarLetter = user?.name?.charAt(0)?.toUpperCase() || "?";
   return (
   
-  <div className="min-h-screen bg-linear-to-br from-neutral-100 via-white to-neutral-200 px-4 py-10 flex items-center justify-center">
+  <div className="min-h-screen bg-linear-to-br from-neutral-100 via-white to-neutral-200">
     <Navbar/>
-    <motion.div
+      <main className="min-h-screen flex justify-center pt-16 px-4">
+       <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full max-w-2xl bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-8 sm:p-10"
-    >
+      className="w-full max-w-2xl max-h-135 bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
         <div className="flex items-center gap-4">
           {/* Avatar */}
           <div className="w-14 h-14 rounded-2xl bg-neutral-900 text-white flex items-center justify-center text-lg font-semibold">
-            {user.name.charAt(0).toUpperCase()}
+            {avatarLetter}
           </div>
 
           <div>
@@ -121,6 +121,9 @@ export default function ProfilePage() {
 
       </div>
     </motion.div>
+
+      </main>
+   
   </div>
 
   );
