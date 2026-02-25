@@ -1,18 +1,29 @@
 // lib/cors.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const FRONTEND_ORIGIN = process.env.ALLOWED_URL!;
+const allowedOrigins = process.env.ALLOWED_URL?.split(",") || [];
 
-export function withCors(res: NextResponse) {
-  res.headers.set("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
+export function withCors(req: NextRequest, res: NextResponse) {
+  const origin = req.headers.get("origin");
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.headers.set("Access-Control-Allow-Origin", origin);
+  }
+
   res.headers.set("Access-Control-Allow-Credentials", "true");
-  res.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-  res.headers.set("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  res.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  );
+  res.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization"
+  );
+
   return res;
 }
 
-// Helper for preflight OPTIONS request
-export function handlePreflight() {
-  const res = NextResponse.json({});
-  return withCors(res);
+export function handlePreflight(req: NextRequest) {
+  const res = new NextResponse(null, { status: 204 });
+  return withCors(req, res);
 }
