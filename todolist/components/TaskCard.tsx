@@ -15,7 +15,7 @@ function TaskCard({
   onToggleComplete,
 }: TaskCardProps) {
   return (
-    <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow mb-4 max-w-md mx-auto hover:shadow-lg transition">
+    <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow mb-4 hover:shadow-lg transition">
       <div className="flex items-center space-x-3">
         <button
           onClick={() => onToggleComplete(task._id, !task.completed)}

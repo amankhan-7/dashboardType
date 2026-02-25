@@ -10,8 +10,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Task Manager",
   description: "Nextjs + TypeScript",
-   icons: {
-    icon: "/todoicon.ico.png", 
+  icons: {
+    icon: "/todoicon.png",
   },
 };
 

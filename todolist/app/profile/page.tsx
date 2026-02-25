@@ -96,7 +96,7 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-2xl max-h-160 md:max-h-130 bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto"
+          className="w-full max-w-2xl max-h-160 md:max-h-100 bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto"
         >
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
@@ -108,9 +108,9 @@ export default function ProfilePage() {
 
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900">
-                  {user.name}
+                  Account Overview
                 </h2>
-                <p className="text-sm text-neutral-500">Account overview</p>
+                <p className="text-sm text-neutral-500">You can change your details here.</p>
               </div>
             </div>
 
@@ -168,6 +168,20 @@ export default function ProfilePage() {
               <p className="text-sm font-medium text-neutral-600">••••••••</p>
             </div>
 
+            
+            {/* Member Since */}
+            <div className="cursor-not-allowed bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm hover:bg-neutral-50 transition">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-neutral-500" />
+                <p className="text-xs uppercase tracking-wide text-neutral-400">
+                  Member Since
+                </p>
+              </div>
+              <p className="text-sm font-medium text-neutral-600">
+                {new Date(user.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+
             <AnimatePresence>
               {editField && (
                 <motion.div
@@ -221,18 +235,6 @@ export default function ProfilePage() {
               )}
             </AnimatePresence>
 
-            {/* Member Since */}
-            <div className="sm:col-span-2 bg-white border border-neutral-200 rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-neutral-500" />
-                <p className="text-xs uppercase tracking-wide text-neutral-400">
-                  Member Since
-                </p>
-              </div>
-              <p className="text-sm font-medium text-neutral-600">
-                {new Date(user.createdAt).toLocaleDateString()}
-              </p>
-            </div>
           </div>
         </motion.div>
       </main>

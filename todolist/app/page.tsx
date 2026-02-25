@@ -55,8 +55,21 @@ export default function DashboardPage() {
             <p className="text-neutral-500 mt-2 text-sm sm:text-base">
               Manage and track your tasks efficiently.
             </p>
+            {/* Status Legend */}
+<div className="flex items-center gap-6 mt-4">
+  <div className="flex items-center gap-2">
+    <span className="w-3 h-3 rounded-full bg-green-500"></span>
+    <span className="text-sm text-neutral-600">Completed</span>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <span className="w-3 h-3 rounded-full bg-red-500"></span>
+    <span className="text-sm text-neutral-600">Pending</span>
+  </div>
+</div>
           </div>
         </motion.div>
+        
 
         {/* Tasks Grid */}
         {tasks.length > 0 && (

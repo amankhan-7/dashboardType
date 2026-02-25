@@ -15,7 +15,7 @@ export default function TaskForm({ onAdd }: { onAdd: (title: string) => void }) 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center space-x-2 bg-white p-4 rounded-xl shadow-md mb-6 max-w-md mx-auto mt-10"
+      className="flex items-center space-x-2 bg-white px-4 rounded-xl shadow-none max-w-md mx-auto"
     >
       <input
         type="text"
@@ -26,7 +26,7 @@ export default function TaskForm({ onAdd }: { onAdd: (title: string) => void }) 
       />
       <button
         type="submit"
-        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition"
+        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition cursor-pointer"
       >
         Add
       </button>
