@@ -5,6 +5,7 @@ import { hashPassword } from "../../../utils/hash";
 import { registerSchema } from "../../../lib/validators";
 import { signAccessToken, signRefreshToken } from "../../../lib/jwt";
 import { withCors, handlePreflight } from "../../../lib/cors";
+import jwt from "jsonwebtoken";
 
 export async function OPTIONS() {
   return handlePreflight();
@@ -34,12 +35,33 @@ export async function POST(req: Request) {
 
     const hashedPassword = await hashPassword(password);
 
-    const refreshToken = signRefreshToken({}, { expiresIn: '7d' });
-    const refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    // 1. Create user first (without refresh token)
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
-    const user = await User.create({ name, email, password: hashedPassword, refreshToken, refreshTokenExpiry });
+    const userId = user._id.toString();
 
-    const accessToken = signAccessToken({ userId: user._id.toString() });
+    // 2. Generate tokens
+    const accessToken = signAccessToken(
+      { userId },
+      { expiresIn: "15m" }
+    );
+
+    const refreshToken = signRefreshToken(
+      { userId },
+      { expiresIn: "7d" }
+    );
+
+    // 3. Set refresh token expiry
+ const decoded = jwt.decode(refreshToken) as any;
+const refreshTokenExpiry = new Date(decoded.exp * 1000);
+    // 4. Save refresh token to DB
+    user.refreshToken = refreshToken;
+    user.refreshTokenExpiry = refreshTokenExpiry;
+    await user.save();
 
 
     // Proper NextResponse creation
@@ -47,20 +69,22 @@ export async function POST(req: Request) {
       status: 201,
     });
 
+    const isProd = process.env.NODE_ENV === "production";
+
     res.cookies.set("accessToken", accessToken, {
       httpOnly: true,
       path: "/",
-      maxAge: 15 * 60, //15m
-      sameSite: "lax",
-      secure: false,
+      maxAge: 15 * 60,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
     });
 
     res.cookies.set("refreshToken", refreshToken, {
       httpOnly: true,
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
-      sameSite: "lax",
-      secure: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
     });
 
     return withCors(res);

@@ -1,18 +1,11 @@
-
-
 const API = process.env.NEXT_PUBLIC_API_URL!;
-
-if (!API) {
-  throw new Error("NEXT_PUBLIC_API_URL is not defined");
-}
+if (!API) throw new Error("NEXT_PUBLIC_API_URL is not defined");
 
 /* ============================= */
 /*           API ERROR           */
 /* ============================= */
-
 export class ApiError extends Error {
   status: number;
-
   constructor(message: string, status: number) {
     super(message);
     this.name = "ApiError";
@@ -21,56 +14,50 @@ export class ApiError extends Error {
 }
 
 /* ============================= */
-/*          BASE FETCH           */
+/*         GLOBAL AUTH STATE     */
 /* ============================= */
-
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
-interface RefreshSuccess {
-  accessToken: string;
+// Optional: global callback for logout UX
+let onLogoutCallback: (() => void) | null = null;
+export function setLogoutCallback(callback: () => void) {
+  onLogoutCallback = callback;
 }
 
-interface RefreshError {
-  error: string;
-}
-
-type RefreshResponse = RefreshSuccess | RefreshError;
-
+/* ============================= */
+/*     REFRESH ACCESS TOKEN      */
+/* ============================= */
 async function refreshAccessToken(): Promise<void> {
   if (isRefreshing && refreshPromise) return refreshPromise;
 
   isRefreshing = true;
 
   refreshPromise = (async () => {
-    const res = await fetch(`${API}/api/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    let data: RefreshResponse | null = null;
     try {
-      data = await res.json();
-    } catch {}
+      const res = await fetch(`${API}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
 
-    if (!res.ok) {
-      const message = data && "error" in data ? data.error : "Session expired";
-      throw new ApiError(message, 401);
-    }
-
-    if (data && "accessToken" in data) {
-      // Example: localStorage.setItem("token", data.accessToken);
+      if (!res.ok) {
+        // Failed refresh → global logout
+        if (onLogoutCallback) onLogoutCallback();
+        throw new ApiError("Session expired", 401);
+      }
+      // Success → new accessToken is in HttpOnly cookie, no parsing needed
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
     }
   })();
 
-  try {
-    await refreshPromise;
-  } finally {
-    isRefreshing = false;
-    refreshPromise = null;
-  }
+  return refreshPromise;
 }
 
+/* ============================= */
+/*           BASE FETCH           */
+/* ============================= */
 interface ApiErrorResponse {
   error: string;
   message?: string;
@@ -95,8 +82,8 @@ async function baseFetch<T>(
 
     const res = await fetch(`${API}${path}`, {
       ...options,
-      credentials: "include",
       headers,
+      credentials: "include",
       signal: controller.signal,
     });
 
@@ -105,11 +92,10 @@ async function baseFetch<T>(
     let rawData: unknown = null;
     try {
       rawData = await res.json();
-    } catch {
-      rawData = null;
-    }
+    } catch {}
 
     if (res.status === 401 && retry) {
+      // Try refresh once
       clearTimeout(timeoutId);
       await refreshAccessToken();
       return baseFetch<T>(path, options, timeout, false);
@@ -128,8 +114,9 @@ async function baseFetch<T>(
   } catch (error) {
     if (error instanceof ApiError) throw error;
 
-    if (error instanceof DOMException && error.name === "AbortError")
+    if (error instanceof DOMException && error.name === "AbortError") {
       throw new ApiError("Request timeout", 408);
+    }
 
     throw new ApiError("Network error", 0);
   } finally {
@@ -140,7 +127,6 @@ async function baseFetch<T>(
 /* ============================= */
 /*         RESPONSE TYPES        */
 /* ============================= */
-
 export interface AuthResponse {
   message: string;
 }
@@ -151,7 +137,6 @@ export interface User {
   email: string;
 }
 
-// **NOTE:** Use `_id` to match your frontend hook
 export interface Task {
   _id: string;
   title: string;
@@ -163,7 +148,6 @@ export interface Task {
 /* ============================= */
 /*            AUTH               */
 /* ============================= */
-
 export function login(email: string, password: string): Promise<AuthResponse> {
   return baseFetch<AuthResponse>("/api/auth/login", {
     method: "POST",
@@ -183,23 +167,27 @@ export function register(
 }
 
 export function logout(): Promise<null> {
+  // Trigger UI logout callback on client
+  if (onLogoutCallback) onLogoutCallback();
   return baseFetch<null>("/api/auth/logout", { method: "POST" });
 }
 
 export function getProfile(): Promise<User> {
   return baseFetch<User>("/api/profile");
 }
+
 export function updateProfile(
-  updates: { name?: string; email?: string; password?:string }): Promise<AuthResponse> {
+  updates: { name?: string; email?: string; password?: string }
+): Promise<AuthResponse> {
   return baseFetch<AuthResponse>("/api/auth/update", {
     method: "POST",
-    body: JSON.stringify({ updates }),
+    body: JSON.stringify(updates),
   });
 }
+
 /* ============================= */
 /*            TASKS              */
 /* ============================= */
-
 export function fetchTasks(): Promise<Task[]> {
   return baseFetch<Task[]>("/api/tasks");
 }
