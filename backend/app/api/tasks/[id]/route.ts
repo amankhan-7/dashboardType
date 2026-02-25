@@ -16,10 +16,10 @@ export async function OPTIONS(req: NextRequest) {
 /* ---------- UPDATE TASK ---------- */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     const { userId, error } = await requireUser();
     if (error) {
@@ -68,10 +68,10 @@ export async function PATCH(
 /* ---------- DELETE TASK ---------- */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     const { userId, error } = await requireUser();
     if (error) {
