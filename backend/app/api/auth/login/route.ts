@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     httpOnly: true,
     path: "/",
     maxAge: 15 * 60,
-    sameSite: "lax",
+    sameSite: isProd ? "none" : "lax",
     secure: isProd,
   });
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     httpOnly: true,
     path: "/",
     maxAge: 7 * 24 * 60 * 60,
-    sameSite: "lax",
+    sameSite: isProd ? "none" : "lax",
     secure: isProd,
   });
 

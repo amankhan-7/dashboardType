@@ -80,19 +80,19 @@ export async function POST() {
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookies.set("accessToken", newAccessToken, {
+  res.cookies.set("accessToken", accessToken, {
     httpOnly: true,
     path: "/",
     maxAge: 15 * 60,
-    sameSite: "lax",
+    sameSite: isProd ? "none" : "lax",
     secure: isProd,
   });
 
-  res.cookies.set("refreshToken", newRefreshToken, {
+  res.cookies.set("refreshToken", refreshToken, {
     httpOnly: true,
     path: "/",
     maxAge: 7 * 24 * 60 * 60,
-    sameSite: "lax",
+    sameSite: isProd ? "none" : "lax",
     secure: isProd,
   });
 

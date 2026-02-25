@@ -56,8 +56,8 @@ export async function POST(req: Request) {
     );
 
     // 3. Set refresh token expiry
- const decoded = jwt.decode(refreshToken) as any;
-const refreshTokenExpiry = new Date(decoded.exp * 1000);
+    const decoded = jwt.decode(refreshToken) as any;
+    const refreshTokenExpiry = new Date(decoded.exp * 1000);
     // 4. Save refresh token to DB
     user.refreshToken = refreshToken;
     user.refreshTokenExpiry = refreshTokenExpiry;
