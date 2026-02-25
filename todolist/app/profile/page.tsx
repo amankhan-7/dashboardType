@@ -71,7 +71,7 @@ export default function ProfilePage() {
   }, [loading, user, router]);
 
   const handleLogout = async () => {
-    
+
     await logout();
     router.replace("/auth/login");
   };
@@ -96,7 +96,7 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-2xl max-h-screen bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto"
+          className="w-full max-w-2xl max-h-160 md:max-h-130 bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto"
         >
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
@@ -174,7 +174,7 @@ export default function ProfilePage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+                  className="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-50"
                   onClick={() => setEditField(null)}
                 >
                   <motion.div

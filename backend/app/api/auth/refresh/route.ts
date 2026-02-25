@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       path: "/",
       maxAge: 15 * 60,
-      sameSite: isProd ? "none" : "lax",
-      secure: isProd,
+   sameSite: "none",
+secure: true,
     });
 
     // ✅ Set NEW refresh token, not old one
@@ -103,8 +103,8 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
-      sameSite: isProd ? "none" : "lax",
-      secure: isProd,
+sameSite: "none",
+secure: true,
     });
 
     return withCors(req, res);
