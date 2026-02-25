@@ -180,7 +180,7 @@ export function updateProfile(
   updates: { name?: string; email?: string; password?: string }
 ): Promise<AuthResponse> {
   return baseFetch<AuthResponse>("/api/auth/update", {
-    method: "POST",
+    method: "PATCH",
     body: JSON.stringify(updates),
   });
 }

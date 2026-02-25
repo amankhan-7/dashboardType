@@ -95,7 +95,7 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-2xl max-h-135 bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto"
+          className="w-full max-w-2xl max-h-screen bg-white/80 backdrop-blur-xl border border-neutral-200 rounded-3xl shadow-xl p-5 sm:p-6 overflow-auto"
         >
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
