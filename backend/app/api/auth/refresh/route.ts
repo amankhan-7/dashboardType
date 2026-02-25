@@ -80,7 +80,7 @@ export async function POST() {
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookies.set("accessToken", accessToken, {
+  res.cookies.set("accessToken", newAccessToken, {
     httpOnly: true,
     path: "/",
     maxAge: 15 * 60,
