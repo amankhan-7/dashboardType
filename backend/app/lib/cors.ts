@@ -1,7 +1,8 @@
 // lib/cors.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const allowedOrigins = process.env.ALLOWED_URL?.split(",") || [];
+const allowedOrigins =
+  process.env.ALLOWED_URL?.split(",").map((o) => o.trim()) || [];
 
 export function withCors(req: NextRequest, res: NextResponse) {
   const origin = req.headers.get("origin");

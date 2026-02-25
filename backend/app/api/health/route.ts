@@ -1,12 +1,18 @@
-// app/health/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { withCors, handlePreflight } from "../../lib/cors";
 
-export async function OPTIONS() {
-  return handlePreflight();
+export const runtime = "nodejs";
+
+// Preflight
+export async function OPTIONS(req: NextRequest) {
+  return handlePreflight(req);
 }
 
+export async function GET(req: NextRequest) {
+  const res = NextResponse.json(
+    { status: "ok", message: "Backend is running" },
+    { status: 200 }
+  );
 
-export async function GET() {
-return withCors(NextResponse.json({ status: "ok", message: "Backend is running" }));
+  return withCors(req, res);
 }

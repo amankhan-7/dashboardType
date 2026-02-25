@@ -1,37 +1,65 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "../../lib/db";
 import Task from "../../models/Task";
-import { verifyAccessToken } from "../../lib/jwt";
 import { taskSchema } from "../../lib/validators";
 import { requireUser } from "../../lib/auth";
 import { withCors, handlePreflight } from "../../lib/cors";
 
-export async function OPTIONS() {
-  return handlePreflight();
+export const runtime = "nodejs";
+
+// Preflight
+export async function OPTIONS(req: NextRequest) {
+  return handlePreflight(req);
 }
 
 /* ---------- GET TASKS ---------- */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  try {
+    const { userId, error } = await requireUser();
 
-  const { userId, error } = await requireUser();
-  if (error) return error; // early return if unauthorized
+    if (error) {
+      return withCors(req, error);
+    }
 
-  await connectDB();
-  const tasks = await Task.find({ userId });
+    await connectDB();
 
-  return withCors(NextResponse.json(tasks));
+    const tasks = await Task.find({ userId });
+
+    const res = NextResponse.json(tasks, { status: 200 });
+    return withCors(req, res);
+
+  } catch {
+    const res = NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
+    return withCors(req, res);
+  }
 }
 
 /* ---------- CREATE TASK ---------- */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  try {
+    const { userId, error } = await requireUser();
 
-  const { userId, error } = await requireUser();
-  if (error) return error; // early return if unauthorized
-  const body = taskSchema.parse(await req.json());
+    if (error) {
+      return withCors(req, error);
+    }
 
-  await connectDB();
-  const task = await Task.create({ ...body, userId });
+    const body = taskSchema.parse(await req.json());
 
-  return withCors(NextResponse.json(task, { status: 201 }));
+    await connectDB();
+
+    const task = await Task.create({ ...body, userId });
+
+    const res = NextResponse.json(task, { status: 201 });
+    return withCors(req, res);
+
+  } catch (err: any) {
+    const res = NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
+    return withCors(req, res);
+  }
 }

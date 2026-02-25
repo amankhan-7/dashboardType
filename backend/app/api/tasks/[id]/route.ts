@@ -1,5 +1,4 @@
-// api/tasks/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "../../../lib/db";
 import Task from "../../../models/Task";
@@ -7,74 +6,105 @@ import { requireUser } from "../../../lib/auth";
 import { taskUpdateSchema } from "../../../lib/validators";
 import { withCors, handlePreflight } from "../../../lib/cors";
 
-export async function OPTIONS() {
-  return handlePreflight();
+export const runtime = "nodejs";
+
+// Preflight
+export async function OPTIONS(req: NextRequest) {
+  return handlePreflight(req);
 }
 
 /* ---------- UPDATE TASK ---------- */
-export async function PATCH(req: Request, context: any) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
 
-    const params = await context.params; 
-  const { id } = params;
-  
-  // Ensure user is authenticated
-  const { userId, error } = await requireUser();
-  if (error) return error;
+    const { userId, error } = await requireUser();
+    if (error) {
+      return withCors(req, error);
+    }
 
-//   console.log("PATCH id:", id);
-// console.log("userId from auth:", userId);
-// const taskInDb = await Task.findById(id);
-// console.log("Task in DB:", taskInDb);
+    const body = await req.json();
+    const parsedData = taskUpdateSchema.parse(body);
 
+    if (Object.keys(parsedData).length === 0) {
+      const res = NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 }
+      );
+      return withCors(req, res);
+    }
 
-  // Parse and validate incoming data
-  const body = await req.json();
-  const parsedData = taskUpdateSchema.parse(body);
+    await connectDB();
 
-  if (Object.keys(parsedData).length === 0) {
-    return withCors(NextResponse.json(
-      { error: "No valid fields to update" },
-      { status: 400 }
-    ));
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userId: new mongoose.Types.ObjectId(userId) },
+      { $set: parsedData },
+      { new: true, runValidators: true }
+    );
+
+    if (!task) {
+      const res = NextResponse.json(
+        { error: "Task not found or not owned by user" },
+        { status: 404 }
+      );
+      return withCors(req, res);
+    }
+
+    const res = NextResponse.json(task, { status: 200 });
+    return withCors(req, res);
+
+  } catch (err: any) {
+    const res = NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
+    return withCors(req, res);
   }
-
-  await connectDB();
-
-  // Update task partially
-  const task = await Task.findOneAndUpdate(
-    { _id: id, userId: new mongoose.Types.ObjectId(userId) },
-    { $set: parsedData },
-    { new: true, runValidators: true }
-  );
-
-  if (!task) {
-    return withCors(NextResponse.json(
-      { error: "Task not found or not owned by user" },
-      { status: 404 }
-    ));
-  }
-
-  return withCors(NextResponse.json(task));
 }
 
 /* ---------- DELETE TASK ---------- */
-export async function DELETE(req: Request, context: any) {
-     const params = await context.params; 
-  const { id } = params;
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
 
-  const { userId, error } = await requireUser();
-  if (error) return error;
+    const { userId, error } = await requireUser();
+    if (error) {
+      return withCors(req, error);
+    }
 
-  await connectDB();
+    await connectDB();
 
-  const deleted = await Task.findOneAndDelete({
-    _id: id,
-    userId: new mongoose.Types.ObjectId(userId),
-  });
+    const deleted = await Task.findOneAndDelete({
+      _id: id,
+      userId: new mongoose.Types.ObjectId(userId),
+    });
 
-  if (!deleted) {
-    return withCors(NextResponse.json({ error: "Task not found or not owned by user" }, { status: 404 }));
+    if (!deleted) {
+      const res = NextResponse.json(
+        { error: "Task not found or not owned by user" },
+        { status: 404 }
+      );
+      return withCors(req, res);
+    }
+
+    const res = NextResponse.json(
+      { message: "Deleted" },
+      { status: 200 }
+    );
+
+    return withCors(req, res);
+
+  } catch (err: any) {
+    const res = NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
+    return withCors(req, res);
   }
-
-  return withCors(NextResponse.json({ message: "Deleted" }));
 }

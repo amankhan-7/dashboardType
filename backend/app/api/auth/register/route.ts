@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "../../../lib/db";
 import User from "../../../models/User";
 import { hashPassword } from "../../../utils/hash";
@@ -7,10 +7,10 @@ import { signAccessToken, signRefreshToken } from "../../../lib/jwt";
 import { withCors, handlePreflight } from "../../../lib/cors";
 import jwt from "jsonwebtoken";
 
-export async function OPTIONS() {
-  return handlePreflight();
+// Preflight
+export async function OPTIONS(req: NextRequest) {
+  return handlePreflight(req);
 }
-
 
 // Type for request body
 interface RegisterRequestBody {
@@ -19,23 +19,29 @@ interface RegisterRequestBody {
   password: string;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    console.log("register route ran");
-
     await connectDB();
 
-    const body: RegisterRequestBody = registerSchema.parse(await req.json());
+    const body: RegisterRequestBody = registerSchema.parse(
+      await req.json()
+    );
+
     const { name, email, password } = body;
 
     const exists = await User.findOne({ email });
+
     if (exists) {
-      return withCors(NextResponse.json({ message: "User exists" }, { status: 400 }));
+      const res = NextResponse.json(
+        { message: "User exists" },
+        { status: 400 }
+      );
+      return withCors(req, res);
     }
 
     const hashedPassword = await hashPassword(password);
 
-    // 1. Create user first (without refresh token)
+    // Create user
     const user = await User.create({
       name,
       email,
@@ -44,7 +50,7 @@ export async function POST(req: Request) {
 
     const userId = user._id.toString();
 
-    // 2. Generate tokens
+    // Generate tokens
     const accessToken = signAccessToken(
       { userId },
       { expiresIn: "15m" }
@@ -55,19 +61,19 @@ export async function POST(req: Request) {
       { expiresIn: "7d" }
     );
 
-    // 3. Set refresh token expiry
+    // Decode refresh token expiry
     const decoded = jwt.decode(refreshToken) as any;
     const refreshTokenExpiry = new Date(decoded.exp * 1000);
-    // 4. Save refresh token to DB
+
+    // Save refresh token in DB
     user.refreshToken = refreshToken;
     user.refreshTokenExpiry = refreshTokenExpiry;
     await user.save();
 
-
-    // Proper NextResponse creation
-    const res = new NextResponse(JSON.stringify({ message: "Registered" }), {
-      status: 201,
-    });
+    const res = NextResponse.json(
+      { message: "Registered" },
+      { status: 201 }
+    );
 
     const isProd = process.env.NODE_ENV === "production";
 
@@ -87,10 +93,15 @@ export async function POST(req: Request) {
       secure: isProd,
     });
 
-    return withCors(res);
+    return withCors(req, res);
   } catch (err: any) {
     console.error("Register error:", err);
-    return withCors(NextResponse.json({ error: err.message || "Server error" }, { status: 500 }));
+
+    const res = NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
+
+    return withCors(req, res);
   }
 }
-
