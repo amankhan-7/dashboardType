@@ -19,7 +19,7 @@ function TaskCard({
       <div className="flex items-center space-x-3">
         <button
           onClick={() => onToggleComplete(task._id, !task.completed)}
-          className={`w-6 h-6 flex items-center justify-center border-2 rounded-full transition ${
+          className={`w-6 h-6 py-2 px-2.5 flex items-center justify-center border-2 rounded-full transition ${
             task.completed
               ? "bg-green-500 border-green-500"
               : "border-gray-300"

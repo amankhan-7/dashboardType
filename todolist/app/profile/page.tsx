@@ -92,7 +92,7 @@ export default function ProfilePage() {
   return (
     <div className="bg-linear-to-br from-neutral-100 via-white to-neutral-200">
       <Navbar />
-      <main className="min-h-212 md:h-167.5 flex justify-center pt-18 px-4">
+      <main className="h-screen md:h-167.5 flex justify-center pt-18 px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
