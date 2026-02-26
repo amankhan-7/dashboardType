@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getProfile } from "../lib/api";
 
 type AuthUser = {
@@ -10,6 +10,12 @@ type AuthUser = {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0); // trigger re-fetch
+
+  const refreshUser = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+    setLoading(true); // optional: show loading state on refresh
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +37,7 @@ export function useAuth() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshKey]); // now useEffect runs whenever refreshKey changes
 
-  return { user, loading };
+  return { user, loading, refreshUser };
 }

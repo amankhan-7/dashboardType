@@ -11,7 +11,7 @@ import Navbar from "@/components/Navbar";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   // console.log("user obj",user);
 
   const [editField, setEditField] = useState<
@@ -52,6 +52,7 @@ export default function ProfilePage() {
       setSaving(true);
       await updateProfile(updates);
       setEditField(null);
+      refreshUser();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -89,9 +90,9 @@ export default function ProfilePage() {
   }
   const avatarLetter = user?.name?.charAt(0)?.toUpperCase() || "?";
   return (
-    <div className="min-h-screen bg-linear-to-br from-neutral-100 via-white to-neutral-200">
+    <div className="bg-linear-to-br from-neutral-100 via-white to-neutral-200">
       <Navbar />
-      <main className="min-h-screen flex justify-center pt-16 px-4">
+      <main className="min-h-212 md:h-167.5 flex justify-center pt-18 px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

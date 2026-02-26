@@ -47,22 +47,22 @@ export default function DashboardPage() {
           <div className="bg-white/70 backdrop-blur-xl border border-neutral-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center gap-3">
               <ClipboardList className="w-6 h-6 text-neutral-700" />
-              <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900">
+              <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight">
                 Dashboard
               </h1>
             </div>
 
-            <p className="text-neutral-500 mt-2 text-sm sm:text-base">
+            <p className="text-neutral-500 mt-2 text-sm sm:text-base tracking-tight">
               Manage and track your tasks efficiently.
             </p>
             {/* Status Legend */}
-<div className="flex items-center gap-6 mt-4">
+<div className="flex items-center tracking-tight gap-6 mt-4">
   <div className="flex items-center gap-2">
     <span className="w-3 h-3 rounded-full bg-green-500"></span>
     <span className="text-sm text-neutral-600">Completed</span>
   </div>
 
-  <div className="flex items-center gap-2">
+  <div className="flex items-center gap-2">   
     <span className="w-3 h-3 rounded-full bg-red-500"></span>
     <span className="text-sm text-neutral-600">Pending</span>
   </div>
