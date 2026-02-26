@@ -1,6 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { withCors, handlePreflight } from "../../../lib/cors";
 
-export async function POST(req: Request) {
+export const runtime = "nodejs";
+
+export async function OPTIONS(req: NextRequest) {
+  return handlePreflight(req);
+}
+
+export async function POST(req: NextRequest) {
   // Clear the cookies
   const res = NextResponse.json({ message: "Logged out" });
 
@@ -8,17 +15,18 @@ export async function POST(req: Request) {
     httpOnly: true,
     path: "/",
     maxAge: 0,
-    sameSite: "lax",
-    secure: false, // true in production
+    sameSite: "none",
+    secure: true,
   });
 
   res.cookies.set("refreshToken", "", {
     httpOnly: true,
     path: "/",
     maxAge: 0,
-    sameSite: "lax",
-    secure: false, // true in production
+    sameSite: "none",
+    secure: true,
   });
 
-  return res;
+
+  return withCors(req, res);
 }
